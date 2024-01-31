@@ -46,10 +46,15 @@ Status del_data(
 Status find_data(
 			CSV* csv , // struct data of csv file 
 			char* element ,// word that u search for like name : mike
-			bool *found , // ptr to var true if found else false
 			int *position ,// positions of word that u search for.
 			int* _founds // how many times found 
 			);
+Status Get_data(	
+		CSV* csv , // struct data of csv file
+		char* id , // id of data 
+		char* line_data , // array of chars to get the data line
+		size_t length // array size
+		);
 void Close_CSV(CSV* csv);
 
 #endif //CSV_H_
@@ -174,10 +179,11 @@ Status del_data(CSV* csv , int line)
 	return success;
 }
 
-Status find_data(CSV* csv ,char* element ,bool *found ,int *position , int* _founds)
+Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 {
 	size_t size = 0;
 	int line = 0;
+	bool found = false ;
 	FILE *fp = fopen(csv->name , "r");
 	if(!fp) return error;
 	char linechar[256];
@@ -186,7 +192,7 @@ Status find_data(CSV* csv ,char* element ,bool *found ,int *position , int* _fou
 		char* tok = strtok(linechar , ",");
 		while(tok != NULL){
 			if(strcmp(tok , element) == 0){
-				*found = true;
+				found = true;
 				position[size++] = line;
 			}
 			tok = strtok(NULL , ",");
@@ -194,10 +200,34 @@ Status find_data(CSV* csv ,char* element ,bool *found ,int *position , int* _fou
 	}
 	*_founds = (int)size;
 	fclose(fp);
-	if(size == 0) return warning;
-	return success;
+	//if(size == 0) return warning;
+	if(found)
+		return success;
+	return error;
 }
 
+Status Get_data(CSV* csv , char* id , char* line_data , size_t length)
+{
+	FILE* fp = fopen(csv->name , "r");
+	if(!fp)	return error;
+
+	int position[2];
+	int how_many;
+	Status status_find = find_data(csv ,id, position , &how_many);
+	if(status_find == error){
+		return error;
+		//free(position);
+	}
+	int line = 0;
+	while(fgets(line_data , length , fp) != NULL){
+		line++;
+		if(line == position[0])
+			// we found data
+			break;
+	}
+	//free(position);
+	return success;
+}
 void Close_CSV(CSV* csv){
 	free(csv);
 }
