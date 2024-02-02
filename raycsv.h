@@ -1,3 +1,26 @@
+/**********************************************************************************************************************************************
+*			Copyright (c) 2023 Ray Den
+*
+*	Permission is hereby granted, free of charge, to any person obtaining a copy
+*	of this software and associated documentation files (the "Software"), to deal
+*	in the Software without restriction, including without limitation the rights
+*	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+*	copies of the Software, and to permit persons to whom the Software is
+*	furnished to do so, subject to the following conditions:
+*	
+*	The above copyright notice and this permission notice shall be included in
+*	all copies or substantial portions of the Software.
+*	
+*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+*	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+*	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+*	THE SOFTWARE.
+*
+*******************************************************************************************************************************************/
+
 #ifndef CSV_H_
 #define CSV_H_
 
@@ -14,6 +37,38 @@ typedef struct{
 	char types[maxTypes];
 }CSV;
 
+typedef struct {
+	Status (*CSV_Init)(
+		const char* filename , // name of file
+		bool isnew , // true if this file is new else false
+		char* format, // format of csv file 
+		CSV* csv // status out if function works successfully or not 
+	);
+	Status (*CSV_Add_Data)(
+		CSV* csv , // statctures from init function 
+		bool title, // if you want to add titles if not we put new line 
+		char* data[] , // array of strings data to added to file  
+		size_t data_size // array size
+	);
+	Status (*CSV_Del_Data)(
+		CSV* csv , // statctures from init function 
+		int line // line to delete
+	);
+	Status (*CSV_Find_Data)(
+			CSV* csv , // struct data of csv file 
+			char* element ,// word that u search for like name : mike
+			int *position ,// positions of word that u search for.
+			int* _founds // how many times found 
+		);
+	Status (*CSV_Get_Data)(	
+		CSV* csv , // struct data of csv file
+		char* id , // id of data 
+		char* line_data , // array of chars to get the data line
+		size_t length // array size
+		);
+}CSV_Class;
+
+
 //typedef struct{
 //	char* username;
 //	char* password;
@@ -26,36 +81,42 @@ typedef struct{
 #ifndef endl
 #define endl(file)	(fputs("\n" , (file)))
 #endif
-CSV* Init_CSV(
+
+#define CSV_ALLOCATE(a)	((a)=(CSV*)malloc(sizeof(CSV)))
+#define CSV_FREE	free
+
+static Status init(
 	const char* filename , // name of file
 	bool isnew , // true if this file is new else false
 	char* format, // format of csv file 
-	Status* status // status out if function works successfully or not 
+	CSV* csv // status out if function works successfully or not 
 	);
 
-Status add_data(
+static Status add_data(
 	CSV* csv , // statctures from init function 
 	bool title, // if you want to add titles if not we put new line 
 	char* data[] , // array of strings data to added to file  
 	size_t data_size // array size
 	);
-Status del_data(
+static Status del_data(
 	CSV* csv , // statctures from init function 
 	int line // line to delete
 	);
-Status find_data(
+static Status find_data(
 			CSV* csv , // struct data of csv file 
 			char* element ,// word that u search for like name : mike
 			int *position ,// positions of word that u search for.
 			int* _founds // how many times found 
 			);
-Status Get_data(	
+static Status Get_data(	
 		CSV* csv , // struct data of csv file
 		char* id , // id of data 
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
 		);
-void Close_CSV(CSV* csv);
+static void close(CSV* csv);
+
+CSV_Class Init_Class_Functions(void);
 
 #endif //CSV_H_
 
@@ -72,9 +133,9 @@ void Close_CSV(CSV* csv);
 //	error   = 1,
 // 	
 // initial function 
-CSV* Init_CSV(const char* filename , bool isnew , char* format , Status* status ){
+
+Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	// we will handle format here
-	CSV* csv = (CSV*)malloc(sizeof(CSV));
 	size_t count = 0;
 	int idx = 0;
 	while(count < strlen(format)){
@@ -99,15 +160,14 @@ CSV* Init_CSV(const char* filename , bool isnew , char* format , Status* status 
 	// creation csv file
 	FILE *file = fopen(filename , fmt);
 	if(!file)
-		*status = error;
+		return error;
 	
 	// now structure is full of information file with all types
 	csv->name = filename;	
-	(*status) = success;
 	fclose(file);
 	// Don't forgot to free memory
 	//free(csv);
-	return csv;
+	return success;
 }
 // why this function didn't work?
 Status add_data(CSV* csv , bool title, char* data[],size_t data_size)
@@ -228,7 +288,15 @@ Status Get_data(CSV* csv , char* id , char* line_data , size_t length)
 	//free(position);
 	return success;
 }
-void Close_CSV(CSV* csv){
-	free(csv);
+CSV_Class Init_Class_Functions(void)
+{
+	CSV_Class obj;
+	obj.CSV_Init = init;
+	obj.CSV_Add_Data = add_data;
+	obj.CSV_Del_Data = del_data;
+	obj.CSV_Find_Data = find_data;
+	obj.CSV_Get_Data = Get_data;
+
+	return obj;
 }
 #endif

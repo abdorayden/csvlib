@@ -7,17 +7,21 @@ int main(void){
 	Status status; // handel error's using Status object
 	// to create csv file you need to use init function first
 	char* file = "students.csv";
-	CSV* csvfile = Init_CSV(
+	CSV* csvfile;
+	CSV_ALLOCATE(csvfile);
+
+	CSV_Class obj = Init_Class_Functions();
+	status = obj.CSV_Init(
 		file, // filename
 		true, // this is new file
 		"n,s,n", // format file is <name : str , age : number>
-		&status // address of status object
+		csvfile
 	);
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : opening %s file" , file);
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	// add titles 
@@ -26,25 +30,25 @@ int main(void){
 		"name",
 		"age"
 	};
-	status = add_data(
+	status = obj.CSV_Add_Data(
 		csvfile, // csvfile object 
 		true, // true if this title
 		titles, // array string of data or titles
 		array_size(titles) // size 
-	);
+	); 
 	// checking for warning
 	// you can define ESCAPR_LEN_OF_FORMAT_DATA to escape format length and keep wrtiting data
 	if(status  == warning){
 		fprintf(stderr , "Warning : data or titles length are big then format");
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : can't add data");
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	// now let's add some data
@@ -86,33 +90,38 @@ int main(void){
 		"r",
 		"49", // use number as string
 	};
-	status = add_data(csvfile, false , data , array_size(data));
+	status = obj.CSV_Add_Data(
+		csvfile, // csvfile object 
+		false, // true if this title
+		data, // array string of data or titles
+		array_size(data) // size 
+	); 
 	// checking for warning
 	// you can define ESCAPR_LEN_OF_FORMAT_DATA to escape format length and keep wrtiting data
 	if(status  == warning){
 		fprintf(stderr , "Warning : data or titles length are big then format");
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : can't add data");
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	char gettingdata[1024];
-	status = Get_data(csvfile , "11" ,gettingdata , array_size(gettingdata));
+	status = obj.CSV_Get_Data(csvfile , "11" ,gettingdata , array_size(gettingdata)); 
 	if(status == error){
 		// closing file
-		Close_CSV(csvfile);
+		CSV_FREE(csvfile);
 		return 1;
 	}
 	// for testing 
 	//puts(gettingdata);
 	
 	// closing file
-	Close_CSV(csvfile);
+	CSV_FREE(csvfile);
 	return 0;
 }
