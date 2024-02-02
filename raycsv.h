@@ -114,7 +114,6 @@ static Status Get_data(
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
 		);
-static void close(CSV* csv);
 
 CSV_Class Init_Class_Functions(void);
 
