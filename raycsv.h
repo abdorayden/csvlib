@@ -25,7 +25,7 @@
 #define CSV_H_
 
 #define RUN_AS_C_FILE_ // run as c file
-#include "src/rayutils.h"
+#include "utils/rayutils.h"
 
 // you can change this cinfiguration.
 #define maxTypes	25
