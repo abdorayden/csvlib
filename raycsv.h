@@ -28,7 +28,7 @@
 #include "src/rayutils.h"
 
 // you can change this cinfiguration.
-#define maxTypes	6
+#define maxTypes	25
 
 // structures 
 typedef struct{
@@ -62,7 +62,21 @@ typedef struct {
 		);
 	Status (*CSV_Get_Data)(	
 		CSV* csv , // struct data of csv file
-		char* id , // id of data 
+		char* data , // id of data 
+		char* line_data , // array of chars to get the data line
+		size_t length // array size
+		);
+
+	Status (*Get_Titles)(
+		CSV* csv , // struct data of csv file
+		char title[], // array title line
+		size_t title_size // size of array title
+		);
+	Status (*Get_Data_By_Title)(
+		CSV* csv , // struct data of csv file
+		char* data,
+		char* title_name , // title name name to get data 
+		int idx, // index of title
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
 		);
@@ -110,9 +124,15 @@ static Status find_data(
 			);
 static Status Get_data(	
 		CSV* csv , // struct data of csv file
-		char* id , // id of data 
+		char* data , // id of data 
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
+		);
+
+static Status Get_titles(
+		CSV* csv , // struct data of csv file
+		char title[], // array title line
+		size_t title_size // size of array title
 		);
 
 CSV_Class Init_Class_Functions(void);
@@ -124,8 +144,7 @@ CSV_Class Init_Class_Functions(void);
 // 	s: string
 // 	n: number
 // 	b: boolean
-// Example:
-// 	init("test.csv" , "s,s,s", &status);
+
 // out param value:
 //	warning = -1,
 //	success = 0,
@@ -134,6 +153,8 @@ CSV_Class Init_Class_Functions(void);
 // initial function 
 
 Status init(const char* filename , bool isnew , char* format , CSV* csv){
+	if(!csv)
+		return error;
 	// we will handle format here
 	size_t count = 0;
 	int idx = 0;
@@ -240,18 +261,25 @@ Status del_data(CSV* csv , int line)
 
 Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 {
+	Status status = error;
+	if(!csv){
+		puts("from csv");
+		return status;
+	}
 	size_t size = 0;
 	int line = 0;
-	bool found = false ;
 	FILE *fp = fopen(csv->name , "r");
-	if(!fp) return error;
+	if(!fp){
+		puts("from fp");
+		return error;
+	}
 	char linechar[256];
 	while(fgets(linechar , sizeof(linechar) , fp) != NULL){
 		line++;
 		char* tok = strtok(linechar , ",");
 		while(tok != NULL){
 			if(strcmp(tok , element) == 0){
-				found = true;
+				status = success;
 				position[size++] = line;
 			}
 			tok = strtok(NULL , ",");
@@ -260,19 +288,18 @@ Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 	*_founds = (int)size;
 	fclose(fp);
 	//if(size == 0) return warning;
-	if(found)
-		return success;
-	return error;
+	return status;
 }
 
-Status Get_data(CSV* csv , char* id , char* line_data , size_t length)
+Status Get_data(CSV* csv , char* data , char* line_data , size_t length)
 {
+	if(!csv)
+		return error;
 	FILE* fp = fopen(csv->name , "r");
 	if(!fp)	return error;
-
 	int position[2];
 	int how_many;
-	Status status_find = find_data(csv ,id, position , &how_many);
+	Status status_find = find_data(csv ,data, position , &how_many);
 	if(status_find == error){
 		return error;
 		//free(position);
@@ -287,6 +314,25 @@ Status Get_data(CSV* csv , char* id , char* line_data , size_t length)
 	//free(position);
 	return success;
 }
+
+static Status Get_titles(
+		CSV* csv , // struct data of csv file
+		char title[], // array title line
+		size_t title_size // size of array title
+		)
+{
+	if(!csv) return error;
+	FILE *fp = fopen(csv->name , "r");
+	if(!fp) return error;
+	if(fgets(title , title_size , fp) == NULL){
+		fclose(fp);
+		return error;
+	}
+	fclose(fp);
+	return success;
+
+}
+
 CSV_Class Init_Class_Functions(void)
 {
 	CSV_Class obj;
@@ -295,6 +341,8 @@ CSV_Class Init_Class_Functions(void)
 	obj.CSV_Del_Data = del_data;
 	obj.CSV_Find_Data = find_data;
 	obj.CSV_Get_Data = Get_data;
+	/***************************************/
+	obj.Get_Titles = Get_titles;
 
 	return obj;
 }

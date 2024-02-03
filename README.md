@@ -1,10 +1,10 @@
  # CSV Library in C
 
-This library provides a simple and easy-to-use interface for working with CSV (comma-separated values) files in C. It includes functions for creating, reading, updating, and deleting CSV files, as well as searching for specific data within a CSV file.
+This library provides a simple and easy-to-use interface for working with CSV (comma-separated values) files in C. It includes functions for creating, reading, updating, and deleting CSV files, as well as searching for specific data within a CSV file and getting data from the file.
 
 ## Installation
 
-To install the CSV library, simply copy the `raycsv.h` files into your project directory. You will also need to include the `rayutils.h` header file, which is included in the library , You should to define CSV_C_ .
+To install the CSV library, simply copy the `raycsv.h` files into your project directory. You will also need to include the `rayutils.h` header file, which is included in the library , You should to define CSV_C_ before include liberary.
 
 
 ## Usage
@@ -19,18 +19,37 @@ To use the CSV library, you will first need to create a `CSV` object. This can b
     * `b`: Boolean
 * `status`: A pointer to a `Status` object, which will be used to return the status of the operation.
 
-The `init()` function will return a pointer to a `CSV` object, which can then be used to perform various operations on the CSV file.
+For example, the following format string specifies a CSV file with three columns: a string column, a number column, and a boolean column:
+
+```
+"s,n,b"
+```
+
+```c
+#define CSV_C_
+#include "raycsv.h"
+
+CSV* csv;
+
+CSV_ALLOCATE(csv);
+CSV_Class obj;
+Status status = obj.CSV_Init("test.csv", true, "s,s,s", csv);
+if (status != success) {
+    // Handle error
+}
+CSV_FREE(csv);
+```
 
 ## Adding Data to a CSV File
 
-To add data to a CSV file, you can use the `add_data()` function. This function takes the following arguments:
+To add data to a CSV file, you can use the `obj.CSV_Add_Data()` method. This method takes the following arguments:
 
 * `csv`: A pointer to a `CSV` object.
 * `title`: A boolean value indicating whether to add the titles of the data to the CSV file.
 * `data`: An array of strings containing the data to be added to the CSV file.
 * `data_size`: The size of the `data` array.
 
-The `add_data()` function will append the data to the CSV file, and will automatically add commas between the data values.
+The `CSV_Add_Data()` method will append the data to the CSV file, and will automatically add commas between the data values.
 
 ## Deleting Data from a CSV File
 
@@ -39,4 +58,4 @@ To delete data from a CSV file, you can use the `del_data()` function. This func
 * `csv`: A pointer to a `CSV` object.
 * `line`: The line number of the data to be deleted.
 
-The `del_data()`
+The `CSV_Del_Data()`

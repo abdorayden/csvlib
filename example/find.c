@@ -16,9 +16,9 @@ int main(void){
 		return 1;
 	}
 	int pos[2];
-	int f[2];
+	int f;
 	// checking error
-	if(csv.CSV_Find_Data(csvfiles , "1" ,pos , f) == error){
+	if(csv.CSV_Find_Data(csvfiles , "fbar" ,pos , &f) == error){
 		fprintf(stderr , "data not found");
 		// closing file
 		CSV_FREE(csvfiles);
@@ -27,11 +27,19 @@ int main(void){
 	printf("we found at line : %d\n" , pos[0]);
 	puts("getting the line data ... ");
 	char dataline[1024];
-	if( csv.CSV_Get_Data(csvfiles , "1" , dataline , array_size(dataline)) == error){
+	if( csv.CSV_Get_Data(csvfiles , "fbar" , dataline , array_size(dataline)) == error){
 		fprintf(stderr , "Error : error");
 		CSV_FREE(csvfiles);
+		return 1;
 	}
 	puts(dataline);
+	char titles[1024];
+	if(csv.Get_Titles(csvfiles , titles , array_size(titles)) == error){
+		fprintf(stderr , "Error : error");
+		CSV_FREE(csvfiles);
+		return 1;
+	}
+	puts(titles);
 
 	CSV_FREE(csvfiles);
 
