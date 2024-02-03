@@ -72,14 +72,6 @@ typedef struct {
 		char title[], // array title line
 		size_t title_size // size of array title
 		);
-	Status (*Get_Data_By_Title)(
-		CSV* csv , // struct data of csv file
-		char* data,
-		char* title_name , // title name name to get data 
-		int idx, // index of title
-		char* line_data , // array of chars to get the data line
-		size_t length // array size
-		);
 }CSV_Class;
 
 
