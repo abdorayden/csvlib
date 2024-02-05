@@ -38,36 +38,36 @@ typedef struct{
 }CSV;
 
 typedef struct {
-	Status (*CSV_Init)(
+	static Status (*CSV_Init)(
 		const char* filename , // name of file
 		bool isnew , // true if this file is new else false
 		char* format, // format of csv file 
 		CSV* csv // status out if function works successfully or not 
 	);
-	Status (*CSV_Add_Data)(
+	static Status (*CSV_Add_Data)(
 		CSV* csv , // statctures from init function 
 		bool title, // if you want to add titles if not we put new line 
 		char* data[] , // array of strings data to added to file  
 		size_t data_size // array size
 	);
-	Status (*CSV_Del_Data)(
+	static Status (*CSV_Del_Data)(
 		CSV* csv , // statctures from init function 
 		int line // line to delete
 	);
-	Status (*CSV_Find_Data)(
+	static Status (*CSV_Find_Data)(
 			CSV* csv , // struct data of csv file 
 			char* element ,// word that u search for like name : mike
 			int *position ,// positions of word that u search for.
 			int* _founds // how many times found 
 		);
-	Status (*CSV_Get_Data)(	
+	static Status (*CSV_Get_Data)(	
 		CSV* csv , // struct data of csv file
 		char* data , // id of data 
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
 		);
 
-	Status (*Get_Titles)(
+	static Status (*Get_Titles)(
 		CSV* csv , // struct data of csv file
 		char title[], // array title line
 		size_t title_size // size of array title
@@ -144,7 +144,7 @@ CSV_Class Init_Class_Functions(void);
 // 	
 // initial function 
 
-Status init(const char* filename , bool isnew , char* format , CSV* csv){
+static Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	if(!csv)
 		return error;
 	// we will handle format here
@@ -182,7 +182,7 @@ Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	return success;
 }
 // why this function didn't work?
-Status add_data(CSV* csv , bool title, char* data[],size_t data_size)
+static tatus add_data(CSV* csv , bool title, char* data[],size_t data_size)
 {
 	if(csv == NULL) // init function not called
 		return error;
@@ -226,7 +226,7 @@ Status add_data(CSV* csv , bool title, char* data[],size_t data_size)
 	fclose(file);
 	return success;
 }
-Status del_data(CSV* csv , int line)
+static Status del_data(CSV* csv , int line)
 {
 	if(csv == NULL) // init function not called
 		return error;
@@ -251,7 +251,7 @@ Status del_data(CSV* csv , int line)
 	return success;
 }
 
-Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
+static Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 {
 	Status status = error;
 	if(!csv){
@@ -283,7 +283,7 @@ Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 	return status;
 }
 
-Status Get_data(CSV* csv , char* data , char* line_data , size_t length)
+static Status Get_data(CSV* csv , char* data , char* line_data , size_t length)
 {
 	if(!csv)
 		return error;
