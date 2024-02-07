@@ -38,40 +38,42 @@ typedef struct{
 }CSV;
 
 typedef struct {
-	static Status (*CSV_Init)(
+	CSV* csvfile;
+	Status (*CSV_Init)(
 		const char* filename , // name of file
 		bool isnew , // true if this file is new else false
 		char* format, // format of csv file 
 		CSV* csv // status out if function works successfully or not 
 	);
-	static Status (*CSV_Add_Data)(
+	Status (*CSV_Add_Data)(
 		CSV* csv , // statctures from init function 
 		bool title, // if you want to add titles if not we put new line 
 		char* data[] , // array of strings data to added to file  
 		size_t data_size // array size
 	);
-	static Status (*CSV_Del_Data)(
+	Status (*CSV_Del_Data)(
 		CSV* csv , // statctures from init function 
 		int line // line to delete
 	);
-	static Status (*CSV_Find_Data)(
+	Status (*CSV_Find_Data)(
 			CSV* csv , // struct data of csv file 
 			char* element ,// word that u search for like name : mike
 			int *position ,// positions of word that u search for.
 			int* _founds // how many times found 
 		);
-	static Status (*CSV_Get_Data)(	
+	Status (*CSV_Get_Data)(	
 		CSV* csv , // struct data of csv file
 		char* data , // id of data 
 		char* line_data , // array of chars to get the data line
 		size_t length // array size
 		);
 
-	static Status (*Get_Titles)(
+	Status (*CSV_Get_Titles)(
 		CSV* csv , // struct data of csv file
 		char title[], // array title line
 		size_t title_size // size of array title
 		);
+	Status (*CSV_Close)(CSV* csvfile);
 }CSV_Class;
 
 
@@ -87,9 +89,6 @@ typedef struct {
 #ifndef endl
 #define endl(file)	(fputs("\n" , (file)))
 #endif
-
-#define CSV_ALLOCATE(a)	((a)=(CSV*)malloc(sizeof(CSV)))
-#define CSV_FREE	free
 
 static Status init(
 	const char* filename , // name of file
@@ -126,6 +125,8 @@ static Status Get_titles(
 		char title[], // array title line
 		size_t title_size // size of array title
 		);
+
+static Status close(CSV* csvfile);
 
 CSV_Class Init_Class_Functions(void);
 
@@ -182,7 +183,7 @@ static Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	return success;
 }
 // why this function didn't work?
-static tatus add_data(CSV* csv , bool title, char* data[],size_t data_size)
+static Status add_data(CSV* csv , bool title, char* data[],size_t data_size)
 {
 	if(csv == NULL) // init function not called
 		return error;
@@ -324,18 +325,25 @@ static Status Get_titles(
 	return success;
 
 }
+static Status close(CSV* csvfile)
+{
+	free(csvfile);
+}
 
 CSV_Class Init_Class_Functions(void)
 {
 	CSV_Class obj;
+	obj.csvfile = (CSV*)malloc(sizeof(CSV));
 	obj.CSV_Init = init;
 	obj.CSV_Add_Data = add_data;
 	obj.CSV_Del_Data = del_data;
 	obj.CSV_Find_Data = find_data;
 	obj.CSV_Get_Data = Get_data;
 	/***************************************/
-	obj.Get_Titles = Get_titles;
+	obj.CSV_Get_Titles = Get_titles;
+	obj.CSV_Close = close;
 
 	return obj;
 }
+
 #endif

@@ -29,15 +29,12 @@ For example, the following format string specifies a CSV file with three columns
 #define CSV_C_
 #include "raycsv.h"
 
-CSV* csv;
-
-CSV_ALLOCATE(csv);
-CSV_Class obj;
-Status status = obj.CSV_Init("test.csv", true, "s,s,s", csv);
+CSV_Class obj = Init_Class_Functions();
+Status status = obj.CSV_Init("test.csv", true, "s,s,s", obj.csv);
 if (status != success) {
     // Handle error
 }
-CSV_FREE(csv);
+obj.CSV_Close(obj.csvfile);
 ```
 
 ## Adding Data to a CSV File

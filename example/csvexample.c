@@ -7,21 +7,19 @@ int main(void){
 	Status status; // handel error's using Status object
 	// to create csv file you need to use init function first
 	char* file = "students.csv";
-	CSV* csvfile;
-	CSV_ALLOCATE(csvfile);
 
 	CSV_Class obj = Init_Class_Functions();
 	status = obj.CSV_Init(
 		file, // filename
 		true, // this is new file
 		"n,s,n", // format file is <name : str , age : number>
-		csvfile
+		obj.csvfile
 	);
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : opening %s file" , file);
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	// add titles 
@@ -31,7 +29,7 @@ int main(void){
 		"age"
 	};
 	status = obj.CSV_Add_Data(
-		csvfile, // csvfile object 
+		obj.csvfile, // obj.csvfile object 
 		true, // true if this title
 		titles, // array string of data or titles
 		array_size(titles) // size 
@@ -41,14 +39,14 @@ int main(void){
 	if(status  == warning){
 		fprintf(stderr , "Warning : data or titles length are big then format");
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : can't add data");
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	// now let's add some data
@@ -91,7 +89,7 @@ int main(void){
 		"49", // use number as string
 	};
 	status = obj.CSV_Add_Data(
-		csvfile, // csvfile object 
+		obj.csvfile, // obj.csvfile object 
 		false, // true if this title
 		data, // array string of data or titles
 		array_size(data) // size 
@@ -101,27 +99,27 @@ int main(void){
 	if(status  == warning){
 		fprintf(stderr , "Warning : data or titles length are big then format");
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	// checking error
 	if(status  == error){
 		fprintf(stderr , "Error : can't add data");
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	char gettingdata[1024];
-	status = obj.CSV_Get_Data(csvfile , "11" ,gettingdata , array_size(gettingdata)); 
+	status = obj.CSV_Get_Data(obj.csvfile , "11" ,gettingdata , array_size(gettingdata)); 
 	if(status == error){
 		// closing file
-		CSV_FREE(csvfile);
+		obj.CSV_Close(obj.csvfile);
 		return 1;
 	}
 	// for testing 
 	//puts(gettingdata);
 	
 	// closing file
-	CSV_FREE(csvfile);
+	obj.CSV_Close(obj.csvfile);
 	return 0;
 }
