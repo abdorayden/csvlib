@@ -53,7 +53,6 @@ typedef struct {
 	void (*remove_safix)(String str , int *size , const char* rm);
 	bool (*startswith)(String str , char* cmp);
 	bool (*endswith)(String str, char* cmp);
-	void (*clean)(String* str);
 }StringObj;
 
 #define array_size(arr)	(size_t)(sizeof(arr) / sizeof(arr[0]))
@@ -67,7 +66,6 @@ void remove_prefix(String str , int* size , const char* rm);
 void remove_safix(String str , int* size , const char* rm);
 bool strstartswith(String str, char* cmp);
 bool strendswith(String str, char* cmp);
-void clean(String* str);
 
 // counting lines in file name .
 int countlines(char *filename);
@@ -205,10 +203,6 @@ bool strendswith(String str , char* cmp)
 			return false;
 	}
 	return true;
-}
-void clean(String* str)
-{
-	free(str);
 }
 
 int countlines(char *filename)
