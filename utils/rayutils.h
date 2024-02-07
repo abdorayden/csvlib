@@ -21,6 +21,7 @@
 *
 *******************************************************************************************************************************************/
 #include<stdio.h>
+#include<assert.h>
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
@@ -36,7 +37,38 @@ typedef enum{
 	success,
 }Status;
 
+// developing string methods in c
+typedef struct{
+	char* string;
+	size_t length;
+}String;
+
+typedef struct {
+	String str;
+	////////////////
+	void (*split)(String str , char split_what , char* the_str[] , size_t* arr_size);	
+	void (*lower)(String str);
+	void (*upper)(String str);
+	void (*remove_prefix)(String str , int *size ,const char* rm);
+	void (*remove_safix)(String str , int *size , const char* rm);
+	bool (*startswith)(String str , char* cmp);
+	bool (*endswith)(String str, char* cmp);
+	void (*clean)(String* str);
+}StringObj;
+
 #define array_size(arr)	(size_t)(sizeof(arr) / sizeof(arr[0]))
+/********************************************************************************/
+
+StringObj str(char* _string);
+void splitstr(String str , char split_what , char* the_str[] , size_t* arr_size);
+void strlower(String str);
+void strupper(String str);
+void remove_prefix(String str , int* size , const char* rm);
+void remove_safix(String str , int* size , const char* rm);
+bool strstartswith(String str, char* cmp);
+bool strendswith(String str, char* cmp);
+void clean(String* str);
+
 // counting lines in file name .
 int countlines(char *filename);
 
@@ -54,11 +86,130 @@ Status tostr(int num , char arr[] , int arr_size);
 Status to_Int(char* num , int outnum[]);
 void inser_char(char arr[] , size_t *size , char ch , int idx);
 #define random(a , min , max)	(long)&(a) % ((max) + 1 - (min)) + (min)
-Status remove_preffix(const char* data , int size , const char* rm);
-Status remove_saffix(const char* data , int size , const char* rm);
 #endif //UTILS
 
 #ifdef RUN_AS_C_FILE_
+
+StringObj str(char* _string)
+{
+	StringObj le_str;
+	le_str.str.string = _string;
+	le_str.str.length = strlen(_string);
+	/////////////////////////////
+	le_str.split = splitstr;
+	le_str.lower = strlower;
+	le_str.upper = strupper;
+	le_str.remove_prefix = remove_prefix;
+	le_str.remove_safix = remove_safix;
+	le_str.startswith = strstartswith;
+	le_str.endswith = strendswith;
+
+	return le_str;
+}
+// done
+void splitstr(String str , char split_what , char* the_str[] , size_t* arr_size)
+{
+	if(split_what == '\0' || str.string == NULL)
+		return;
+	int i = 0; 
+	int j = 0; 
+	int idxsp = 0;
+	char* sp = malloc(512);
+	while(str.string[i] != '\0'){
+		if(str.string[i] == split_what){
+			strcpy(the_str[j++] , sp);
+			memset(sp , 0, 512);
+			idxsp = 0;
+			i++;
+		}else{
+			sp[idxsp++] = str.string[i];
+			i++;
+		}
+	}
+	strcpy(the_str[j++] , sp);
+	*arr_size = (size_t)j;
+	free(sp);
+}
+void strlower(String str)
+{
+	for(int i = 0 ; i < strlen(str.string) ; i++){
+		if((str.string[i] <= 'Z') && (str.string[i] >= 'A')){
+			str.string[i] += 32;
+		}
+	}
+}
+void strupper(String str)
+{
+	for(int i = 0 ; i < strlen(str.string) ; i++){
+		if((str.string[i] <= 'z') && (str.string[i] >= 'a')){
+			str.string[i] -= 32;
+		}
+	}
+}
+void remove_prefix(String str , int *size ,const char* rm)
+{
+	if(sizeof(str.string) == null)
+		return;
+	int i;
+	int last =(strlen(str.string)-strlen(rm));
+	int idx = 0;
+	while(i < *size){
+		if(i == strlen(rm)){
+			for(int j = i ; j < *size ; j++){
+				str.string[idx++] = str.string[j];
+			}
+			i+= strlen(rm);
+			break;
+		}
+		i++;
+	}
+	while(i<*size){
+		*(str.string+i) = (int)null;
+		i++;
+	}
+	*size -= strlen(rm);
+}
+void remove_safix(String str , int *size , const char* rm)
+{
+	int i;
+	if(strlen(str.string) == null)
+		return;
+	int count = strlen(str.string) - strlen(rm); 
+	for(i = 0 ; i < *size ; i++){
+		if(i >= count){
+			*(str.string+i) = (int)null;
+		}
+	}
+	*size -= strlen(rm);
+}
+bool strstartswith(String str , char* cmp)
+{
+	if(str.string == NULL || cmp == NULL)
+		return false;
+	int i = 0;
+	while(cmp[i] != '\0'){
+		if(str.string[i] != cmp[i])
+			return false;
+		i++;
+	}
+	return true;
+}
+bool strendswith(String str , char* cmp)
+{
+	if((str.string == NULL) || (cmp == NULL))
+		return false;
+	int idx ;
+	int i;
+	for(i = strlen(cmp), idx = 0; (i < strlen(str.string)),(idx < strlen(cmp)) ; i++ , idx++){
+		if(cmp[idx] != str.string[i])
+			return false;
+	}
+	return true;
+}
+void clean(String* str)
+{
+	free(str);
+}
 
 int countlines(char *filename)
 {
@@ -240,44 +391,6 @@ void inser_char(char arr[] , size_t *size , char ch , int idx){
 			break;
 		}
 	}
-}
-Status remove_prefix(char* data , int *size ,const char* rm)
-{
-	if(sizeof(data) == null)
-		return error;
-	int i;
-	int last =(strlen(data)-strlen(rm));
-	int idx = 0;
-	while(i < *size){
-		if(i == strlen(rm)){
-			for(int j = i ; j < *size ; j++){
-				data[idx++] = data[j];
-			}
-			i+= strlen(rm);
-			break;
-		}
-		i++;
-	}
-	while(i<*size){
-		*(data+i) = (int)null;
-		i++;
-	}
-	*size -= strlen(rm);
-	return success;
-}
-Status remove_safix(char* data , int *size , const char* rm)
-{
-	int i;
-	if(strlen(data) == null)
-		return error;
-	int count = strlen(data) - strlen(rm); 
-	for(i = 0 ; i < *size ; i++){
-		if(i >= count){
-			*(data+i) = (int)null;
-		}
-	}
-	*size -= strlen(rm);
-	return success;
 }
 Status tostr(int num , char arr[] , int arr_size)
 {
