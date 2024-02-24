@@ -7,52 +7,109 @@ This library provides a simple and easy-to-use interface for working with CSV (c
 To install the CSV library, simply copy the `raycsv.h` files into your project directory. You will also need to include the `rayutils.h` header file, which is included in the library , You should to define CSV_C_ before include liberary.
 
 
+# Class Methods
+
+. Here is a brief description of each method provided by the CSV_Class class:
+
+1. CSV_Init: Initializes a new CSV object with the given filename and format. The format is a string that specifies the type of each column in the CSV file (e.g., "snb" for string, number, boolean).
+2. CSV_Add_Data: Adds new data to the CSV file. The data is specified as an array of strings, where each string corresponds to a column in the CSV file.
+3. CSV_Del_Data: Deletes a line of data from the CSV file.
+4. CSV_Find_Data: Searches for a specific value in the CSV file and returns the positions where it was found.
+5. CSV_Get_Data: Retrieves a line of data from the CSV file based on its ID.
+6. CSV_Get_Titles: Retrieves the titles (first line) of the CSV file.
+7. CSV_Edit_Data_Line: Edits a line of data in the CSV file.
+8. CSV_File_Info: Retrieves information about the CSV file, such as its name, number of lines, and number of columns.
+9. CSV_Print_Table: Prints the contents of the CSV file as a table in the console.
+10. CSV_Close: Frees the memory used by the CSV object.
+
 ## Usage
 
-To use the CSV library, you will first need to create a `CSV` object. This can be done by calling the `init()` function, which takes the following arguments:
+1. First, include the CSV header file in your C program:
 
-* `filename`: The name of the CSV file to be created or opened.
-* `isnew`: A boolean value indicating whether the CSV file is new or already exists.
-* `format`: A string specifying the format of the CSV file. The format string consists of a series of characters, each of which represents a different data type. The following characters are supported:
-    * `s`: String
-    * `n`: Number
-    * `b`: Boolean
-* `status`: A pointer to a `Status` object, which will be used to return the status of the operation.
-
-For example, the following format string specifies a CSV file with three columns: a string column, a number column, and a boolean column:
-
+```c
+#include "raycsv.h"
 ```
-"s,n,b"
+2. a new `CSV_Class` object using the `Init_Class_Functions()` function:
+```c
+CSV_Class csv = Init_Class_Functions();
 ```
+4. Initialize a new CSV file using the CSV_Init() function. In this example, we'll create a new file called "example.csv" with two columns: a string column and a number column:
+```c
+Status status;
+CSV_Class csvfile;
+csvfile = Init_Class_Functions();
+status = csvfile.CSV_Init("example.csv", true, "sn", csvfile.csvfile);
+if (status != success) {
+    printf("Error initializing CSV file: %d\n", status);
+    return 1;
+}
+```
+5. Add some data to the CSV file using the CSV_Add_Data() function. In this example, we'll add three rows of data:
+```c
+char* data1[] = {"John", "30"};
+char* data2[] = {"Jane", "25"};
+char* data3[] = {"Bob", "35"};
+
+status = csv.CSV_Add_Data(&csvfile, true, (char*[]) {data1, data2, data3}, 3);
+if (status != success) {
+    printf("Error adding data to CSV file: %d\n", status);
+    return 1;
+}
+```
+6. Print the contents of the CSV file using the CSV_Print_Table() function:
+```c
+status = csv.CSV_Print_Table(&csvfile);
+if (status != success) {
+    printf("Error printing CSV file: %d\n", status);
+    return 1;
+}
+```
+7. Close the CSV file using the CSV_Close() function:
+```c
+csv.CSV_Close(&csvfile);
+```
+## The complete example code would look like this:
 
 ```c
 #define CSV_C_
 #include "raycsv.h"
 
-CSV_Class obj = Init_Class_Functions();
-Status status = obj.CSV_Init("test.csv", true, "s,s,s", obj.csv);
-if (status != success) {
-    // Handle error
+int main() {
+    CSV_Class csv = Init_Class_Functions();
+
+    CSV csvfile;
+    Status status = csv.CSV_Init("example.csv", true, "sn", &csvfile);
+    if (status != success) {
+        printf("Error initializing CSV file: %d\n", status);
+        return 1;
+    }
+
+    char* data1[] = {"John", "30"};
+    char* data2[] = {"Jane", "25"};
+    char* data3[] = {"Bob", "35"};
+
+    status = csv.CSV_Add_Data(&csvfile, true, (char*[]) {data1, data2, data3}, 3);
+    if (status != success) {
+        printf("Error adding data to CSV file: %d\n", status);
+        return 1;
+    }
+
+    status = csv.CSV_Print_Table(&csvfile);
+    if (status != success) {
+        printf("Error printing CSV file: %d\n", status);
+        return 1;
+    }
+
+    csv.CSV_Close(&csvfile);
+
+    return 0;
 }
-obj.CSV_Close(obj.csvfile);
 ```
-
-## Adding Data to a CSV File
-
-To add data to a CSV file, you can use the `obj.CSV_Add_Data()` method. This method takes the following arguments:
-
-* `csv`: A pointer to a `CSV` object.
-* `title`: A boolean value indicating whether to add the titles of the data to the CSV file.
-* `data`: An array of strings containing the data to be added to the CSV file.
-* `data_size`: The size of the `data` array.
-
-The `CSV_Add_Data()` method will append the data to the CSV file, and will automatically add commas between the data values.
-
-## Deleting Data from a CSV File
-
-To delete data from a CSV file, you can use the `del_data()` function. This function takes the following arguments:
-
-* `csv`: A pointer to a `CSV` object.
-* `line`: The line number of the data to be deleted.
-
-The `CSV_Del_Data()`
+# This example would create a new CSV file called "example.csv" with the following contents:
+```csv
+string,number
+John,30
+Jane,25
+Bob,35
+```
+You can modify this example to add more data, search for specific data, edit data, and so on, using the other functions provided by the CSV library.

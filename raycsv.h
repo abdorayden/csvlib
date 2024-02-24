@@ -86,7 +86,7 @@ typedef struct {
 	Status (*CSV_Print_Table)(
 			CSV* csv // struct csv file	
 		);
-	Status (*CSV_Close)(CSV* csvfile);
+	void (*CSV_Close)(CSV* csvfile);
 }CSV_Class;
 
 
@@ -151,7 +151,7 @@ static Status CSV_File_Info(
 
 static Status show_table(CSV* csv);
 
-static Status close(CSV* csvfile);
+static void close(CSV* csvfile);
 
 CSV_Class Init_Class_Functions(void);
 
@@ -444,7 +444,7 @@ static Status show_table(CSV* csv)
 	printf("%c", '+');
 	fclose(file);
 }
-static Status close(CSV* csvfile)
+static void close(CSV* csvfile)
 {
 	free(csvfile);
 }
