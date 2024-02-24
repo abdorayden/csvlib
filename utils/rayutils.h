@@ -67,7 +67,7 @@ bool strstartswith(String str, char* cmp);
 bool strendswith(String str, char* cmp);
 
 // counting lines in file name .
-int countlines(char *filename);
+int countlines(const char *filename);
 
 int pgcd(int a , int b);
 int ppcm(int a , int b); 
@@ -112,6 +112,8 @@ void splitstr(String str , char split_what , char* the_str[] , size_t* arr_size)
 	int j = 0; 
 	int idxsp = 0;
 	char* sp = malloc(512);
+	if(!sp)
+		return ;
 	while(str.string[i] != '\0'){
 		if(str.string[i] == split_what){
 			strcpy(the_str[j++] , sp);
@@ -204,7 +206,7 @@ bool strendswith(String str , char* cmp)
 	return true;
 }
 
-int countlines(char *filename)
+int countlines(const char *filename)
 {
 	FILE *fp = fopen(filename,"r");
 	int ch=0;

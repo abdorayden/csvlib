@@ -73,6 +73,15 @@ typedef struct {
 		char title[], // array title line
 		size_t title_size // size of array title
 		);
+	Status (*CSV_Edit_Data_Line)(
+			CSV* csv,
+			int line,
+			char* new_data
+		);
+	Status (*CSV_File_Info)(
+			CSV* csv,
+			char* info // if this null will print it automaticly
+		);
 	Status (*CSV_Close)(CSV* csvfile);
 }CSV_Class;
 
@@ -126,6 +135,15 @@ static Status Get_titles(
 		size_t title_size // size of array title
 		);
 
+static Status CSV_Edit_Data_Line(
+		CSV* csv,
+		int line,
+		char* new_data[]
+	);
+static Status CSV_File_Info(
+		CSV* csv,
+		char* info // if this null will print it automaticly
+	);
 static Status close(CSV* csvfile);
 
 CSV_Class Init_Class_Functions(void);
@@ -325,6 +343,42 @@ static Status Get_titles(
 	return success;
 
 }
+//static Status edit_data_line(
+//		CSV* csv,
+//		int line,
+//		char* new_data,
+//	)
+//{
+//	(void) csv;
+//	(void) new_data;
+//}
+static Status file_info(
+		CSV* csv,
+		char* info // if this null will print it automaticly
+	)
+{
+	char* temp = malloc(256);
+	if(temp == NULL)
+		return error;
+	if(info != NULL){
+		// getting file name
+		sprintf(info , "[+] File Info : \n");
+		sprintf(temp , "[+] FileName : %s\n" , csv->name);
+		strcat(info , temp);
+		sprintf(temp , "[+] lines : %d\n" , countlines(csv->name));
+		strcat(info , temp);
+		sprintf(temp , "[+] cols : %zu\n" , csv->formatlength);
+		strcat(info , temp);
+		free(temp);
+		return success;
+	}
+	free(temp);
+	printf("[+] File Info : \n");
+	printf("[+] Name of File : %s\n" , csv->name);
+	printf("[+] lines : %d\n" , countlines(csv->name));
+	printf("[+] cols : %zu\n" , csv->formatlength);
+	return success;
+}
 static Status close(CSV* csvfile)
 {
 	free(csvfile);
@@ -334,6 +388,7 @@ CSV_Class Init_Class_Functions(void)
 {
 	CSV_Class obj;
 	obj.csvfile = (CSV*)malloc(sizeof(CSV));
+	// check obj.csvfile if equal NULL
 	obj.CSV_Init = init;
 	obj.CSV_Add_Data = add_data;
 	obj.CSV_Del_Data = del_data;
@@ -341,6 +396,8 @@ CSV_Class Init_Class_Functions(void)
 	obj.CSV_Get_Data = Get_data;
 	/***************************************/
 	obj.CSV_Get_Titles = Get_titles;
+	//obj.CSV_Edit_Data_Line = edit_data_line;
+	obj.CSV_File_Info = file_info;
 	obj.CSV_Close = close;
 
 	return obj;
