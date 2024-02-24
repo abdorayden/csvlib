@@ -438,7 +438,8 @@ static Status show_table(CSV* csv)
 			}
 		}
 	}
-	printf("%c", '+');
+	printf("\t|");
+	printf("\n%c", '+');
 	for(int z = 0 ; z < titles_size+ 35 ; z++)
 		printf("-");
 	printf("%c", '+');
