@@ -82,6 +82,10 @@ typedef struct {
 			CSV* csv,
 			char* info // if this null will print it automaticly
 		);
+	// print data table in terminal
+	Status (*CSV_Print_Table)(
+			CSV* csv // struct csv file	
+		);
 	Status (*CSV_Close)(CSV* csvfile);
 }CSV_Class;
 
@@ -135,15 +139,18 @@ static Status Get_titles(
 		size_t title_size // size of array title
 		);
 
-static Status CSV_Edit_Data_Line(
-		CSV* csv,
-		int line,
-		char* new_data[]
+static Status edit_data_line(
+		CSV* csv, // struct data of csv file
+		int line, // line to edit 
+		char* new_data // data to replace with example : "foo,bar,23,true"
 	);
 static Status CSV_File_Info(
 		CSV* csv,
 		char* info // if this null will print it automaticly
 	);
+
+static Status show_table(CSV* csv);
+
 static Status close(CSV* csvfile);
 
 CSV_Class Init_Class_Functions(void);
@@ -343,15 +350,36 @@ static Status Get_titles(
 	return success;
 
 }
-//static Status edit_data_line(
-//		CSV* csv,
-//		int line,
-//		char* new_data,
-//	)
-//{
-//	(void) csv;
-//	(void) new_data;
-//}
+static Status edit_data_line(
+		CSV* csv, // struct data of csv file
+		int line, // line to edit 
+		char* new_data // data to replace with example : "foo,bar,23,true"
+	)
+{
+	if(csv == NULL) // init function not called
+		return error;
+	char _data[1024];
+	// append titles of data to csv file
+	FILE *tempfile = fopen("temp.csv" , "w");
+	FILE *file = fopen(csv->name , "r");
+	if((!file) || (!tempfile))
+		return error;
+	int _line = 0;
+	while((fgets(_data , sizeof(_data) , file)) != NULL){
+		_line++;
+		if(_line == line){
+			fprintf(tempfile , "%s\n" , new_data);
+			continue;
+		}
+		fprintf(tempfile , "%s" , _data);
+	}
+	fclose(tempfile);
+	fclose(file);
+	if(rename("temp.csv" , csv->name) != 0)
+		return error;
+	return success;
+
+}
 static Status file_info(
 		CSV* csv,
 		char* info // if this null will print it automaticly
@@ -379,6 +407,43 @@ static Status file_info(
 	printf("[+] cols : %zu\n" , csv->formatlength);
 	return success;
 }
+static Status show_table(CSV* csv)
+{
+	char line[1024];
+	char c;
+	FILE *file = fopen(csv->name , "r");
+	if(file == NULL)
+		return error;
+	if( Get_titles(csv ,line , 1024) == error ){
+		return error;
+	}
+	const size_t titles_size = strlen(line);
+	printf("- %s\n" , csv->name);	
+	for(int i = 0 ; i < countlines(csv->name) ; i++){
+		if(fgets(line , 1024 , file) != NULL){
+			printf("%c", '+');
+			for(int z = 0 ; z < titles_size+ 35 ; z++)
+				printf("-");
+			printf("%c", '+');
+
+			printf("\n|\t");
+			for(int j = 0 ; j < strlen(line) ; j++){
+				if(line[j] != ',')
+					printf("%c" , line[j]);
+				else 
+					printf("\t|\t");
+				if(line[j + 1] == '\n')
+					printf("\t|");
+				
+			}
+		}
+	}
+	printf("%c", '+');
+	for(int z = 0 ; z < titles_size+ 35 ; z++)
+		printf("-");
+	printf("%c", '+');
+	fclose(file);
+}
 static Status close(CSV* csvfile)
 {
 	free(csvfile);
@@ -396,8 +461,9 @@ CSV_Class Init_Class_Functions(void)
 	obj.CSV_Get_Data = Get_data;
 	/***************************************/
 	obj.CSV_Get_Titles = Get_titles;
-	//obj.CSV_Edit_Data_Line = edit_data_line;
+	obj.CSV_Edit_Data_Line = edit_data_line;
 	obj.CSV_File_Info = file_info;
+	obj.CSV_Print_Table = show_table;
 	obj.CSV_Close = close;
 
 	return obj;
