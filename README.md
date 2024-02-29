@@ -50,7 +50,7 @@ char* data1[] = {"John", "30"};
 char* data2[] = {"Jane", "25"};
 char* data3[] = {"Bob", "35"};
 
-status = csv.CSV_Add_Data(&csvfile, true, (char*[]) {data1, data2, data3}, 3);
+status = csv.CSV_Add_Data(csvfile.csvfile, true, (char*[]) {data1, data2, data3}, 3);
 if (status != success) {
     printf("Error adding data to CSV file: %d\n", status);
     return 1;
@@ -58,7 +58,7 @@ if (status != success) {
 ```
 6. Print the contents of the CSV file using the CSV_Print_Table() function:
 ```c
-status = csv.CSV_Print_Table(&csvfile);
+status = csv.CSV_Print_Table(csvfile.csvfile);
 if (status != success) {
     printf("Error printing CSV file: %d\n", status);
     return 1;
@@ -66,7 +66,7 @@ if (status != success) {
 ```
 7. Close the CSV file using the CSV_Close() function:
 ```c
-csv.CSV_Close(&csvfile);
+csv.CSV_Close(csvfile.csvfile);
 ```
 ## The complete example code would look like this:
 
@@ -77,8 +77,7 @@ csv.CSV_Close(&csvfile);
 int main() {
     CSV_Class csv = Init_Class_Functions();
 
-    CSV csvfile;
-    Status status = csv.CSV_Init("example.csv", true, "sn", &csvfile);
+    Status status = csv.CSV_Init("example.csv", true, "sn", csvfile.csvfile);
     if (status != success) {
         printf("Error initializing CSV file: %d\n", status);
         return 1;
@@ -88,19 +87,19 @@ int main() {
     char* data2[] = {"Jane", "25"};
     char* data3[] = {"Bob", "35"};
 
-    status = csv.CSV_Add_Data(&csvfile, true, (char*[]) {data1, data2, data3}, 3);
+    status = csv.CSV_Add_Data(csvfile.csvfile, true, (char*[]) {data1, data2, data3}, 3);
     if (status != success) {
         printf("Error adding data to CSV file: %d\n", status);
         return 1;
     }
 
-    status = csv.CSV_Print_Table(&csvfile);
+    status = csv.CSV_Print_Table(csvfile.csvfile);
     if (status != success) {
         printf("Error printing CSV file: %d\n", status);
         return 1;
     }
 
-    csv.CSV_Close(&csvfile);
+    csv.CSV_Close(csvfile.csvfile);
 
     return 0;
 }
