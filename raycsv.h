@@ -30,11 +30,15 @@
 // you can change this cinfiguration.
 #define maxTypes	25
 
+// make it easy
+typedef void* (*FunctionCallBack)(void);
+
 // structures 
 typedef struct{
 	const char* name;
 	size_t formatlength;
 	char types[maxTypes];
+	bool is_new_file;
 }CSV;
 
 typedef struct {
@@ -77,6 +81,10 @@ typedef struct {
 			CSV* csv,
 			int line,
 			char* new_data
+		);
+	Status (*CSV_Add_Data_By_Fn)(
+			CSV* csv,
+			FunctionCallBack func
 		);
 	Status (*CSV_File_Info)(
 			CSV* csv,
@@ -144,6 +152,10 @@ static Status edit_data_line(
 		int line, // line to edit 
 		char* new_data // data to replace with example : "foo,bar,23,true"
 	);
+static Status add_data_fn(
+		CSV* csv,
+		FunctionCallBack func
+	);
 static Status CSV_File_Info(
 		CSV* csv,
 		char* info // if this null will print it automaticly
@@ -158,10 +170,13 @@ CSV_Class Init_Class_Functions(void);
 #endif //CSV_H_
 
 #ifdef CSV_C_
+// TODO : handle data type
 // format:
 // 	s: string
 // 	n: number
 // 	b: boolean
+
+// f : format
 
 // out param value:
 //	warning = -1,
@@ -177,22 +192,13 @@ static Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	size_t count = 0;
 	int idx = 0;
 	while(count < strlen(format)){
-		switch(format[count]){
-			case 's':{
-				csv->types[idx++] = 's';
-				break;
-			}
-			case 'n':{
-				csv->types[idx++] = 'n';
-				break;
-			}
-			case 'b':{
-				csv->types[idx++] = 'b';
-				break;
-			}
+		if(format[count] == 'f'){
+			csv->types[idx++] = 'f';
+			break;
 		}
 		count++;
 	}
+	csv->is_new_file = isnew;
 	csv->formatlength = strlen(csv->types);
 	char* fmt = (isnew ? "w" : "a");
 	// creation csv file
@@ -241,7 +247,7 @@ static Status add_data(CSV* csv , bool title, char* data[],size_t data_size)
 	}
 #else
 	if(data_size != csv->formatlength){
-		return warning;
+		return error;
 	}
 	for(size_t i = 0 ; i<data_size; i++ ){
 		if((i <= csv->formatlength) && (i > 0))
@@ -380,6 +386,69 @@ static Status edit_data_line(
 	return success;
 
 }
+//typedef void* (*Function)(
+//		void* ptr // OPTIONAL
+//		);
+static Status add_data_fn(
+		CSV* csv,
+		FunctionCallBack func
+	)
+{
+	if((csv == NULL))	return error;
+	char* fmt = csv->is_new_file ? "a" : "r";
+	FILE* filep = fopen(csv->name , "r");
+	if(filep == NULL)	return error;
+	if(csv->is_new_file){
+		/*
+		 *	Example:
+		 *		void* foo(...){
+		 *			static int i = 0;
+		 *			if(i == 10)	return NULL;
+		 *			return (&i)++;
+		 *		}
+		 *
+		 *		void* foo(...){
+		 *			char* chunck[3] = {"foo" , "bar" , "test"};
+		 *			static int i = 0;
+		 *			if(i == 3)	return NULL;
+		 *			return chunck[i++];
+		 *		}
+		 **/
+		char* temp = malloc(128);
+		while((temp = (char*)func()) != NULL)
+			fprintf(filep , "%s\n" , temp);
+		fclose(filep);
+		return success;
+		
+	}else{
+		FILE* tmp;
+		if((tmp = fopen("temp.csv" , "w")) == NULL)
+			return error;
+		// read file 
+		char* temp = malloc(128);
+		while(fgets(temp , 128 , filep) != NULL){
+			char* data = malloc(128);
+			data = (char*)func();
+			if(data == NULL){
+				continue;
+			}
+			temp[strlen(temp) - 1] = '\0';
+			fprintf(tmp , "%s,%s" , temp , data);
+			endl(tmp);
+			free(data);
+		}
+		fclose(tmp);
+		free(temp);
+		if(rename("temp.csv" , csv->name) != 0){
+			remove("temp.csv");
+			return error;
+		}
+	}
+	fclose(filep);
+	csv->formatlength++;
+	strcat(csv->types, ",f");
+	return success;
+}
 static Status file_info(
 		CSV* csv,
 		char* info // if this null will print it automaticly
@@ -463,6 +532,7 @@ CSV_Class Init_Class_Functions(void)
 	/***************************************/
 	obj.CSV_Get_Titles = Get_titles;
 	obj.CSV_Edit_Data_Line = edit_data_line;
+	obj.CSV_Add_Data_By_Fn = add_data_fn;
 	obj.CSV_File_Info = file_info;
 	obj.CSV_Print_Table = show_table;
 	obj.CSV_Close = close;

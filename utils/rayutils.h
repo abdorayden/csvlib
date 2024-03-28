@@ -23,7 +23,11 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<stdbool.h>
+
+typedef enum{
+	false = 0,
+	true = !false
+}bool;
 
 #define null	0
 
@@ -32,7 +36,6 @@
 
 typedef enum{
 	error = -1,
-	warning,
 	success,
 }Status;
 
@@ -52,6 +55,8 @@ typedef struct {
 	void (*remove_safix)(String str , int *size , const char* rm);
 	bool (*startswith)(String str , char* cmp);
 	bool (*endswith)(String str, char* cmp);
+	//void (*insertstr)
+	//void (*strip)
 }StringObj;
 
 #define array_size(arr)	(size_t)(sizeof(arr) / sizeof(arr[0]))
@@ -79,7 +84,7 @@ Status splitnumbers(int number , int arr[] , int* size);
 Status popidx(int arr[] , int* size , int idx); 
 Status popvalue(int arr[] , int* size , int value);
 int lengh_num(int nums , Status* status);
-Status tostr(int num , char arr[] , int arr_size);
+Status tostr(int num , char arr[]);
 Status to_Int(char* num , int outnum[]);
 void inser_char(char arr[] , size_t *size , char ch , int idx);
 #define random(a , min , max)	(long)&(a) % ((max) + 1 - (min)) + (min)
@@ -119,11 +124,10 @@ void splitstr(String str , char split_what , char* the_str[] , size_t* arr_size)
 			strcpy(the_str[j++] , sp);
 			memset(sp , 0, 512);
 			idxsp = 0;
-			i++;
 		}else{
 			sp[idxsp++] = str.string[i];
-			i++;
 		}
+		i++;
 	}
 	strcpy(the_str[j++] , sp);
 	*arr_size = (size_t)j;
@@ -319,7 +323,7 @@ Status reverse(int arr[] , int size){
 
 /**********************************************************/
 Status splitnumbers(int number , int arr[] , int* size){
-	if(number <= 0) return warning;
+	if(number <= 0) return error;
 	int i = 0;
 	*size = 0;
 	while(number != 0){
@@ -362,7 +366,7 @@ Status popvalue(int arr[] , int* size , int value){
 
 int lengh_num(int nums , Status* status){
 	if(nums <= 0){
-		*status = warning;
+		*status = error;
 		return nums;
 	}
 	int all = 0;
@@ -387,26 +391,15 @@ void inser_char(char arr[] , size_t *size , char ch , int idx){
 		}
 	}
 }
-Status tostr(int num , char arr[] , int arr_size)
+Status tostr(int num , char arr[])
 {
-	int ascii[10];
-	int idx = 0;
-	for(int j = 48 ; j < 58 ; j++)
-		ascii[idx++] = j;
 	int splnum[10];
-	idx = 0;
 	int size;
 	splitnumbers(num , splnum , &size);
-	if(size > arr_size) return error;
-	for(int i = 0 ; i < 10 ; i++){
-		for(int k = 0 ; k<size ; k++)
-			if(splnum[k] == i){
-				arr[idx++] = ascii[i];
-				break;
-			}
+	reverse(splnum , size);
+	for(int k = 0 ; k<size ; k++){
+		arr[k] = splnum[k] + 48;
 	}
-	if(strlen(arr) != size) 
-		return warning;
 	return success;
 }
 

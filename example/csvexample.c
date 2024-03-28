@@ -12,7 +12,7 @@ int main(void){
 	status = obj.CSV_Init(
 		file, // filename
 		true, // this is new file
-		"n,s,n", // format file is <name : str , age : number>
+		"f,f,f", // format file is <name : str , age : number>
 		obj.csvfile
 	);
 	// checking error
