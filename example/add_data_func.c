@@ -3,7 +3,7 @@
 
 char* my_func(void){
 	static size_t i = 0;
-	char* test = malloc(3);
+	char* test = malloc(6);
 	while(i < 14){
 		memset(test , 0 , 3);
 		i++;
@@ -12,6 +12,7 @@ char* my_func(void){
 			free(test);
 			return NULL;
 		}
+		strcat(test , "te");
 		return test;
 	}
 	return NULL;

@@ -178,11 +178,6 @@ CSV_Class Init_Class_Functions(void);
 
 // f : format
 
-// out param value:
-//	warning = -1,
-//	success = 0,
-//	error   = 1,
-// 	
 // initial function 
 
 static Status init(const char* filename , bool isnew , char* format , CSV* csv){
@@ -194,7 +189,6 @@ static Status init(const char* filename , bool isnew , char* format , CSV* csv){
 	while(count < strlen(format)){
 		if(format[count] == 'f'){
 			csv->types[idx++] = 'f';
-			break;
 		}
 		count++;
 	}
@@ -287,15 +281,13 @@ static Status find_data(CSV* csv ,char* element ,int *position , int* _founds)
 {
 	Status status = error;
 	if(!csv){
-		puts("from csv");
 		return status;
 	}
 	size_t size = 0;
 	int line = 0;
 	FILE *fp = fopen(csv->name , "r");
 	if(!fp){
-		puts("from fp");
-		return error;
+		return status;
 	}
 	char linechar[256];
 	while(fgets(linechar , sizeof(linechar) , fp) != NULL){
